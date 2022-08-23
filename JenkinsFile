@@ -1,58 +1,18 @@
-def ssh_publisher(SERVER_CONFIG) {
-    sshPublisher(
-        continueOnError: false,
-        failOnError: true,
-        publishers:[
-            sshPublisherDesc(
-                configName: "${SERVER_CONFIG}",
-                verbose: true,
-                transfers: [
-                    sshTransfer(
-                        sourceFiles: "deploy/develop/script/*.sh",
-                        removePrefix: "deploy/develop/script",
-                        remoteDirectory: "build/script"
-                    ),
-                    sshTransfer(
-                        sourceFiles: "build/libs/*.jar",
-                        removePrefix: "build/libs",
-                        remoteDirectory: "/build/lib",
-                        execCommand: "sh /home/build/script/deploy_server.sh"
-                    ),
-					sshTransfer(
-                        execCommand: "sh /home/build/script/health_check.sh"
-                    )
-                ]
-            )
-        ]
-    )
-}
-
 pipeline {
     environment {
-        SERVER_LIST = "server1,server2"
-    }
+          AWS_ACCESS_KEY_ID = credentials('awsAccessKeyId')
+          AWS_SECRET_ACCESS_KEY = credentials('awsSecretAccessKey')
+          AWS_DEFAULT_REGION = 'ap-northeast-2'
+          HOME = '.' // Avoid npm root owned
+        }
 
     agent any
 
     stages {
         stage("Build") {
             steps {
-                sh "chmod +x gradlew"
-                sh "./gradlew clean build -x test"
-            }
-        }
-
-        stage("Deploy") {
-            steps {
-                echo "deploy.."
-                echo "${SERVER_LIST}"
-
-                script {
-                    SERVER_LIST.tokenize(',').each {
-                        echo "SERVER: ${it}"
-                        ssh_publisher("${it}")
-                    }
-                }
+                sh "chmod +x ./gradlew"
+                sh "./gradlew build"
             }
         }
     }
