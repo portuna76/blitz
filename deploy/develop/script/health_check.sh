@@ -1,6 +1,6 @@
 #!/bin/bash
 # (1)
-url="http://localhost:8080/board/1"
+url="http://localhost:8080/"
 
 timeout=5
 online=false
