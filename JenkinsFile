@@ -13,59 +13,64 @@ pipeline {
       HOME = '.' // Avoid npm root owned
     }
 
-    stage {
-    // Repository 다운로드 받음
+    stages {
         stage('Prepare') {
-            agent any
+            echo ' Cloning Repository'
+            git url: 'https://github.com/portuna85/blitz.git'
+                branch: 'master'
+                credentials: 'jenkinsforgithub'
+        }
 
-            steps {
-                echo 'clone Repository'
-
-                git url: 'https://github.com/portuna85/blitz.git',
-                    branch: 'master',
-                    credentialsId: 'jenkinsforgithub'
-            }
 
             post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
                 success {
-                    echo 'Repository Cloned 성공 '
+                    echo 'Successfully Cloned Repository'
                 }
 
                 always {
-                    echo " I tried... "
+                  echo "i tried..."
                 }
 
-                cleanup{
-                    echo "After all other post condition"
+                cleanup {
+                  echo "after all other post condition"
                 }
             }
         }
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploying'
+        // aws s3 에 파일을 올림
+        stage('Deploy Frontend') {
+          steps {
+            echo 'Deploying Frontend'
+            // 프론트엔드 디렉토리의 정적파일들을 S3 에 올림, 이 전에 반드시 EC2 instance profile 을 등록해야함.
+            dir ('.'){
                 sh '''
                 aws s3 sync ./ s3://my-blitz
                 '''
             }
+          }
+
+          post {
+              // If Maven was able to run the tests, even if some of the test
+              // failed, record the test results and archive the jar file.
+              success {
+                  echo 'Successfully Cloned Repository'
+
+                  mail  to: 'portuna85@gmail.com',
+                        subject: "Deploy Frontend Success",
+                        body: "Successfully deployed frontend!"
+
+              }
+
+              failure {
+                  echo 'I failed :('
+
+                  mail  to: 'portuna85@gmail.com',
+                        subject: "Failed Pipelinee",
+                        body: "Something is wrong with deploy frontend"
+              }
+          }
         }
-
-        post {
-            success {
-                echo 'Successfully Cloned Repository'
-
-                mail to: 'portuna85@gmail.com',
-                     subject: "Deploy Success",
-                     body: "Successfully deployed!!"
-            }
-
-            failure {
-                echo 'Failed :( '
-
-                mail to: 'portuna85@gmail.com',
-                     subject: "Deploy FAILED",
-                     body: "FAILED deployed!!"
-            }
-        }
-    }
 }
+
