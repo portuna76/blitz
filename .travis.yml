@@ -29,9 +29,9 @@ deploy:
     secret_access_key: $AWS_SECRET_KEY # TRAVIS REPO setting에 설정된 값
     bucket: my-blitz # S3 버킷
     region: ap-northeast-2
-    skip_cleanup: true
     acl: private # zip 파일 접근을 private로
     local_dir: deploy
+    edge: true
     wait-until-deployed: true
 
   - provider: codedeploy
@@ -43,6 +43,7 @@ deploy:
     application: blitz
     deployment_group: blitz-group
     region: ap-northeast-2
+    edge: true
     wait-until-deployed: true
 
 # CI 실행완료 시 email로 알람
