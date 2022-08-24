@@ -36,7 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
-     return super.authenticationManagerBean();
+        return super.authenticationManagerBean();
     }
 
     @Override
@@ -47,16 +47,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web
-                .ignoring().antMatchers( "/css/**", "/js/**", "/img/**");
+                .ignoring().antMatchers("/css/**", "/js/**", "/img/**");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().ignoringAntMatchers("/api/**") /* REST API 사용 예외처리 */
+                .csrf().ignoringAntMatchers("/api/**")
                 .and()
                 .authorizeRequests()
-                .antMatchers("/", "/auth/**", "/posts/read/**", "/posts/search/**").permitAll()
+                .antMatchers("/", "/auth/**", "/posts/read/**", "/posts/search/**", "/profile").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
