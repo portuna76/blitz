@@ -6,9 +6,6 @@ branches:
   only:
     - master
 
-before_install:
-  - sudo chmod +x gradlew
-
 # Travis CI 서버의 HOME
 cache:
   directories:
@@ -17,6 +14,25 @@ cache:
 
 script:
   - "./gradlew clean build"
+
+before_install:
+  - sudo chmod +x gradlew
+
+before_deploy:
+  - zip -r blitz *
+  - mkdir -p deploy
+  - mv blitz.zip deploy/blitz.zip
+
+deploy:
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY # TRAVIS REPO setting에 설정된 값
+    secret_access_key: $AWS_SECRET_KEY # TRAVIS REPO setting에 설정된 값
+    bucket: my-blitz
+    region: ap-northeast-2
+    skip_cleanup: true
+    acl: private # zip 파일 접근을 private로
+    local_dir: deploy
+    wait-until-deployed: true
 
 # CI 실행완료 시 email로 알람
 notifications:
