@@ -1,6 +1,8 @@
 #!/bin/bash
 
 REPOSITORY=/home/ec2-user/blitz/scripts
+DE_REPOSITORY=/home/ec2-user/blitz/deploy
+
 
 echo "> 현재 구동중인 애플리케이션 pid 확인"
 
@@ -18,7 +20,7 @@ fi
 
 echo "> 새 어플리케이션 배포"
 
-JAR_NAME=$(ls -tr $REPOSITORY/*.jar | tail -n 1)
+JAR_NAME=$(ls -tr $DE_REPOSITORY/*.jar | tail -n 1)
 
 echo "> JAR Name: $JAR_NAME"
 
@@ -27,6 +29,8 @@ echo "> $JAR_NAME 에 실행권한 추가"
 chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행"
+
+cp $REPOSITORY/*.jar $DE_REPOSITORY
 
 nohup java -jar \
     -Dspring.config.location=classpath:/application.properties,classpath:/application-real.properties,/home/ec2-user/blitz/application-oauth.properties,/home/ec2-user/blitz/application-real-db.properties \
