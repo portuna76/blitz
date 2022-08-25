@@ -1,38 +1,19 @@
-#!/bin/bash
-
-REPOSITORY=/home/ec2-user/blitz/scripts
-DE_REPOSITORY=/home/ec2-user/blitz/deploy
-
-
 echo "> 현재 구동중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(pgrep -fl blitz | grep jar | awk '{print $1}')
+CURRENT_PID=$(ps -ef | grep java | grep blitz | grep -v nohup | awk '{print $2}')
 
-echo "현재 구동중인 어플리케이션 pid: $CURRENT_PID"
+echo "$CURRENT_PID"
 
-if [ -z "$CURRENT_PID" ]; then
-    echo "> 현재 구동중인 애플리케이션이 없으므로 종료하지 않습니다."
+if [ -z ${CURRENT_PID} ]; then
+  echo "> 현재 구동중인 애플리케이션이 없으므로 종료하지 않습니다."
 else
-    echo "> kill -15 $CURRENT_PID"
-    kill -15 $CURRENT_PID
-    sleep 5
+  echo "> sudo kill -15 $CURRENT_PID"
+  sudo kill -15 $CURRENT_PID
+  sleep 10
 fi
 
 echo "> 새 어플리케이션 배포"
 
-JAR_NAME=$(ls -tr $DE_REPOSITORY/*.jar | tail -n 1)
+JAR_PATH=$(ls -t /home/ec2-user/2021-jujeol-jujeol/deploy/*.jar | head -1)
 
-echo "> JAR Name: $JAR_NAME"
-
-echo "> $JAR_NAME 에 실행권한 추가"
-
-chmod +x $JAR_NAME
-
-echo "> $JAR_NAME 실행"
-
-cp $REPOSITORY/*.jar $DE_REPOSITORY
-
-nohup java -jar \
-    -Dspring.config.location=classpath:/application.properties,classpath:/application-real.properties,/home/ec2-user/blitz/application-oauth.properties,/home/ec2-user/blitz/application-real-db.properties \
-    -Dspring.profiles.active=real \
-    $JAR_NAME > $REPOSITORY/nohup.out 2>&1 &
+sudo nohup java -jar -DServer.port=80 -Dspring.profiles.active=dev ${JAR_PATH} >> /home/ec2-user/2021-jujeol-jujeol/logs/jujeol.log &
